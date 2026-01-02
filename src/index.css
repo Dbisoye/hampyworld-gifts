@@ -2,6 +2,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -9,25 +12,25 @@
 
 @layer base {
   :root {
-    --background: 240 4% 95%;
+    --background: 210 40% 96.0784%;
     --foreground: 240 5% 10%;
 
-    --card: 0 0% 98%;
+    --card: 210 40% 98.0392%;
     --card-foreground: 240 5% 10%;
 
-    --popover: 240 5% 90%;
-    --popover-foreground: 240 5% 10%;
+    --popover: 217 32.5843% 17.451%;
+    --popover-foreground: 210 40% 98.0392%;
 
     --primary: 333 71% 50%;
-    --primary-foreground: 327 73% 97%;
+    --primary-foreground: 210 40% 98.0392%;
 
-    --secondary: 240 5% 33%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 215 20.2247% 65.098%;
+    --secondary-foreground: 210 40% 98.0392%;
 
     --muted: 240 4% 83%;
     --muted-foreground: 240 5% 10%;
 
-    --accent: 355 100% 97%;
+    --accent: 333 71.4286% 50.5882%;
     --accent-foreground: 349 89% 60%;
 
     --destructive: 0 72% 50%;
