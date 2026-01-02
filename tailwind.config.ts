@@ -15,7 +15,7 @@ export default {
   	extend: {
   		fontFamily: {
   			sans: [
-  				'Poppins',
+  				'Roboto',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif',
@@ -29,7 +29,7 @@ export default {
   				'serif'
   			],
   			serif: [
-  				'Merriweather',
+  				'Playfair Display',
   				'ui-serif',
   				'Georgia',
   				'Cambria',
@@ -38,7 +38,7 @@ export default {
   				'serif'
   			],
   			mono: [
-  				'JetBrains Mono',
+  				'Roboto Mono',
   				'ui-monospace',
   				'SFMono-Regular',
   				'Menlo',
