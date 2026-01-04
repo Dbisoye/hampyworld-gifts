@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Gift, Menu, X, User, LogOut } from 'lucide-react';
+import { ShoppingCart, Gift, Menu, X, User, LogOut, Package } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -11,21 +11,28 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-card shadow-sm sticky top-0 z-50 border-b border-border">
+    <header className="glass sticky top-0 z-50 border-b border-border/50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 text-primary">
-            <Gift className="w-8 h-8 text-accent" />
-            <span className="text-2xl font-display font-bold">HampyWorld</span>
+        <div className="flex items-center justify-between h-20">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center shadow-gold">
+              <Gift className="w-5 h-5 text-accent-foreground" />
+            </div>
+            <span className="text-2xl font-display font-bold text-foreground tracking-luxe">
+              HampyWorld
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-foreground hover:text-accent transition-colors font-medium">
+          <nav className="hidden md:flex items-center gap-8">
+            <Link to="/" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
               Home
             </Link>
-            <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium">
+            <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
               Shop
+            </Link>
+            <Link to="/orders" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
+              My Orders
             </Link>
             {isAdmin && (
               <Link to="/admin" className="text-accent hover:text-accent/80 transition-colors font-medium">
@@ -35,19 +42,19 @@ const Header = () => {
             <Link to="/cart" className="relative p-2 text-foreground hover:text-accent transition-colors">
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 gradient-gold text-accent-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
                   {itemCount}
                 </span>
               )}
             </Link>
             {user ? (
-              <Button variant="ghost" size="sm" onClick={signOut} className="gap-2">
+              <Button variant="ghost" size="sm" onClick={signOut} className="gap-2 hover:bg-accent/10">
                 <LogOut className="w-4 h-4" />
                 Logout
               </Button>
             ) : (
               <Link to="/auth">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent">
                   <User className="w-4 h-4" />
                   Sign In
                 </Button>
@@ -60,7 +67,7 @@ const Header = () => {
             <Link to="/cart" className="relative p-2 text-foreground">
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 gradient-gold text-accent-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                   {itemCount}
                 </span>
               )}
@@ -73,25 +80,29 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border">
+          <nav className="md:hidden py-6 border-t border-border/50 animate-fade-in">
             <div className="flex flex-col gap-4">
-              <Link to="/" className="text-foreground hover:text-accent transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/" className="text-foreground hover:text-accent transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Home
               </Link>
-              <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Shop
               </Link>
+              <Link to="/orders" className="text-foreground hover:text-accent transition-colors font-medium py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Package className="w-4 h-4" />
+                My Orders
+              </Link>
               {isAdmin && (
-                <Link to="/admin" className="text-accent hover:text-accent/80 transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/admin" className="text-accent hover:text-accent/80 transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                   Admin
                 </Link>
               )}
               {user ? (
-                <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="text-left text-foreground hover:text-accent transition-colors font-medium">
+                <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="text-left text-foreground hover:text-accent transition-colors font-medium py-2">
                   Logout
                 </button>
               ) : (
-                <Link to="/auth" className="text-foreground hover:text-accent transition-colors font-medium" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/auth" className="text-foreground hover:text-accent transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                   Sign In
                 </Link>
               )}
