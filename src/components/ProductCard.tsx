@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Sparkles } from 'lucide-react';
 import { Product } from '@/data/store';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -25,33 +25,39 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Link 
       to={`/product/${product.id}`}
-      className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-lg transition-all duration-300 border border-border hover:border-accent/30"
+      className="group card-luxury overflow-hidden hover-lift"
     >
-      <div className="aspect-square overflow-hidden bg-muted">
+      <div className="aspect-square overflow-hidden bg-muted relative img-overlay">
         <img 
           src={product.image} 
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
+        <div className="absolute top-3 left-3">
+          <span className="inline-flex items-center gap-1 bg-accent/90 text-accent-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-sm">
+            <Sparkles className="w-3 h-3" />
+            {product.category.replace('-', ' ')}
+          </span>
+        </div>
       </div>
-      <div className="p-5">
-        <span className="text-xs font-medium text-accent uppercase tracking-wider">
-          {product.category.replace('-', ' ')}
-        </span>
-        <h3 className="text-lg font-semibold text-foreground mt-1 group-hover:text-accent transition-colors">
+      <div className="p-6">
+        <h3 className="text-lg font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-1">
           {product.name}
         </h3>
-        <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
+        <p className="text-muted-foreground text-sm mt-2 line-clamp-2 leading-relaxed">
           {product.description}
         </p>
-        <div className="flex items-center justify-between mt-4">
-          <span className="text-xl font-bold text-primary">
-            ₹{product.price.toLocaleString()}
-          </span>
+        <div className="flex items-center justify-between mt-5 pt-5 border-t border-border/50">
+          <div>
+            <span className="text-xs text-muted-foreground">Price</span>
+            <p className="text-xl font-bold text-foreground">
+              ₹{product.price.toLocaleString()}
+            </p>
+          </div>
           <Button 
             size="sm" 
             onClick={handleAddToCart}
-            className="gap-2"
+            className="gap-2 gradient-gold border-0 shadow-sm hover:shadow-gold"
           >
             <ShoppingCart className="w-4 h-4" />
             Add

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Gift, Heart, Package, Truck } from 'lucide-react';
+import { ArrowRight, Gift, Heart, Package, Truck, Sparkles, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
@@ -12,34 +12,36 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-secondary via-background to-accent/10 py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+      <section className="relative py-24 md:py-40 overflow-hidden">
+        <div className="absolute inset-0 gradient-luxury" />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-64 h-64 bg-accent/30 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl" />
         </div>
         <div className="container mx-auto px-4 relative">
-          <div className="max-w-3xl mx-auto text-center">
-            <span className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Gift className="w-4 h-4" />
-              Handcrafted with Love
-            </span>
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-foreground leading-tight">
-              Gift Hampers for{' '}
-              <span className="text-accent">Every Moment</span>
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm">
+              <Sparkles className="w-4 h-4" />
+              Handcrafted with Love & Care
+            </div>
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-foreground leading-tight tracking-tight">
+              Luxury Gift Hampers for{' '}
+              <span className="text-gradient-gold">Every Moment</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl mx-auto">
-              Celebrate life's special moments with beautifully curated gift hampers. 
-              From birthdays to apologies, we have the perfect gift for everyone.
+            <p className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed">
+              Celebrate life's precious moments with our meticulously curated gift hampers. 
+              From birthdays to anniversaries, each creation is a masterpiece of thoughtfulness.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-              <Button asChild size="lg" className="text-lg px-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+              <Button asChild size="lg" className="text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow">
                 <Link to="/shop">
-                  Shop Now <ArrowRight className="ml-2 w-5 h-5" />
+                  Explore Collection <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-8">
+              <Button asChild variant="outline" size="lg" className="text-lg px-10 h-14 border-accent/30 hover:bg-accent/10 hover:border-accent">
                 <Link to="/shop?category=love">
-                  Love Hampers <Heart className="ml-2 w-5 h-5" />
+                  <Heart className="mr-2 w-5 h-5 text-accent" /> Love Hampers
                 </Link>
               </Button>
             </div>
@@ -48,60 +50,55 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-card border-y border-border">
+      <section className="py-20 bg-card border-y border-border/50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
-                <Package className="w-7 h-7 text-accent" />
+            {[
+              { icon: Package, title: 'Premium Selection', desc: 'Hand-picked luxury items' },
+              { icon: Truck, title: 'Express Delivery', desc: 'Cash on delivery available' },
+              { icon: Star, title: 'Exceptional Quality', desc: 'Crafted with perfection' },
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className="flex items-center gap-5 justify-center md:justify-start p-6 rounded-2xl hover:bg-secondary/50 transition-colors"
+              >
+                <div className="w-16 h-16 gradient-gold rounded-2xl flex items-center justify-center shadow-gold shrink-0">
+                  <feature.icon className="w-8 h-8 text-accent-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-foreground">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Curated Selection</h3>
-                <p className="text-sm text-muted-foreground">Handpicked premium items</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
-                <Truck className="w-7 h-7 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Fast Delivery</h3>
-                <p className="text-sm text-muted-foreground">Cash on delivery available</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center">
-                <Heart className="w-7 h-7 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Made with Love</h3>
-                <p className="text-sm text-muted-foreground">Each hamper is special</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+          <div className="text-center mb-14">
+            <span className="text-accent text-sm font-medium uppercase tracking-widest">Explore</span>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mt-2">
               Shop by Occasion
             </h2>
-            <p className="text-muted-foreground mt-3">Find the perfect hamper for any moment</p>
+            <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+              Discover the perfect hamper tailored for every special moment in life
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.filter(c => c.id !== 'all').map((category) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {categories.filter(c => c.id !== 'all').map((category, index) => (
               <Link
                 key={category.id}
                 to={`/shop?category=${category.id}`}
-                className="group bg-gradient-to-br from-card to-secondary p-6 rounded-2xl border border-border hover:border-accent/50 hover:shadow-lg transition-all duration-300 text-center"
+                className="group card-luxury p-8 hover-lift text-center"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent/20 transition-colors">
-                  <Gift className="w-8 h-8 text-accent" />
+                <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-shadow">
+                  <Gift className="w-10 h-10 text-accent-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">
+                <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
                   {category.name}
                 </h3>
               </Link>
@@ -111,44 +108,54 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-secondary/50">
+      <section className="py-24 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-12">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-14">
             <div>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                Featured Hampers
+              <span className="text-accent text-sm font-medium uppercase tracking-widest">Featured</span>
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mt-2">
+                Bestselling Hampers
               </h2>
-              <p className="text-muted-foreground mt-2">Our most loved gift selections</p>
+              <p className="text-muted-foreground mt-3">Our most loved gift selections, curated for excellence</p>
             </div>
-            <Button asChild variant="outline" className="mt-4 md:mt-0">
+            <Button asChild variant="outline" className="mt-6 md:mt-0 border-accent/30 hover:bg-accent/10 hover:border-accent">
               <Link to="/shop">
                 View All <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {featuredProducts.map((product, index) => (
+              <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-12 text-center text-primary-foreground">
-            <h2 className="text-3xl md:text-4xl font-display font-bold">
-              Ready to Spread Joy?
-            </h2>
-            <p className="mt-4 text-primary-foreground/80 max-w-xl mx-auto">
-              Browse our collection of thoughtfully curated gift hampers and make someone's day special.
-            </p>
-            <Button asChild size="lg" variant="secondary" className="mt-8">
-              <Link to="/shop">
-                Explore All Hampers <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
+          <div className="gradient-dark rounded-3xl p-16 text-center text-primary-foreground relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+            </div>
+            <div className="relative">
+              <h2 className="text-4xl md:text-5xl font-display font-bold">
+                Ready to Spread Joy?
+              </h2>
+              <p className="mt-6 text-primary-foreground/70 max-w-xl mx-auto text-lg leading-relaxed">
+                Browse our exclusive collection of thoughtfully curated gift hampers 
+                and make someone's day truly extraordinary.
+              </p>
+              <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow">
+                <Link to="/shop">
+                  Explore All Hampers <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
