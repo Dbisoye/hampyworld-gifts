@@ -22,6 +22,12 @@ interface Order {
   tracking_number: string | null;
   tracking_url: string | null;
   shiprocket_shipment_id: string | null;
+  order_items?: Array<{
+    id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+  }>;
 }
 
 interface TrackingInfo {
@@ -57,12 +63,12 @@ const Orders = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, created_at, status, payment_status, total, customer_name, customer_address, tracking_number, tracking_url, shiprocket_shipment_id, order_items ( id, product_name, product_price, quantity )')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders((data as unknown as Order[]) || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast({
@@ -89,13 +95,13 @@ const Orders = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, created_at, status, payment_status, total, customer_name, customer_address, tracking_number, tracking_url, shiprocket_shipment_id, order_items ( id, product_name, product_price, quantity )')
         .eq('customer_phone', guestPhone)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGuestOrders(data || []);
-      
+      setGuestOrders((data as unknown as Order[]) || []);
+
       if (data?.length === 0) {
         toast({
           title: "No orders found",
@@ -115,11 +121,11 @@ const Orders = () => {
   };
 
   const trackOrder = async (order: Order) => {
+    // Reset previous modal state
+    setTrackingInfo(null);
+
+    // Tracking only becomes available after a shipment is created
     if (!order.shiprocket_shipment_id && !order.tracking_number) {
-      toast({
-        title: "Tracking not available",
-        description: "Tracking information is not yet available for this order",
-      });
       return;
     }
 
@@ -133,7 +139,7 @@ const Orders = () => {
       });
 
       if (error) throw error;
-      
+
       if (data?.success && data?.data?.tracking_data) {
         setTrackingInfo({
           current_status: data.data.tracking_data.shipment_status_desc || 'In Transit',
@@ -216,6 +222,43 @@ const Orders = () => {
           <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
           <span className="line-clamp-2">{order.customer_address}</span>
         </div>
+
+        <div className="rounded-lg bg-secondary/40 p-3">
+          <p className="text-sm font-medium text-foreground mb-2">Order Details</p>
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Payment</span>
+              <span className="text-foreground font-medium">
+                {order.payment_status?.toUpperCase()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Items</span>
+              <span className="text-foreground font-medium">
+                {order.order_items?.length ? order.order_items.length : 0}
+              </span>
+            </div>
+          </div>
+
+          {order.order_items?.length ? (
+            <ul className="mt-3 space-y-1">
+              {order.order_items.map((item) => (
+                <li key={item.id} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {item.product_name} × {item.quantity}
+                  </span>
+                  <span className="text-foreground">
+                    ₹{(item.product_price * item.quantity).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Items may be missing for older test orders. New orders will show full item details.
+            </p>
+          )}
+        </div>
         
         <div className="flex items-center justify-between pt-3 border-t border-border">
           <div>
@@ -229,7 +272,6 @@ const Orders = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => trackOrder(order)}
-                disabled={!order.shiprocket_shipment_id && !order.tracking_number}
                 className="gap-2"
               >
                 <Truck className="w-4 h-4" />
@@ -285,8 +327,8 @@ const Orders = () => {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>Tracking information not available yet</p>
-                  <p className="text-sm mt-1">Please check back later</p>
+                  <p>Tracking not available yet</p>
+                  <p className="text-sm mt-1">Tracking starts after the shipment is created from Admin.</p>
                 </div>
               )}
             </DialogContent>

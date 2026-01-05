@@ -67,9 +67,11 @@ const Checkout = () => {
       if (orderError) throw orderError;
 
       // Create order items
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
       const orderItems = items.map(item => ({
         order_id: order.id,
-        product_id: item.product.id,
+        product_id: uuidRegex.test(item.product.id) ? item.product.id : null,
         product_name: item.product.name,
         product_price: item.product.price,
         quantity: item.quantity

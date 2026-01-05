@@ -10,7 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  checkAdminRole: () => Promise<boolean>;
+  checkAdminRole: (userId?: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,19 +29,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const checkAdminRole = async (): Promise<boolean> => {
-    if (!user) return false;
-    
+  const checkAdminRole = async (userId?: string): Promise<boolean> => {
+    const uid = userId ?? user?.id;
+    if (!uid) {
+      setIsAdmin(false);
+      return false;
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user.id)
+        .eq('user_id', uid)
         .eq('role', 'admin')
         .maybeSingle();
 
       if (error) {
         console.error('Error checking admin role:', error);
+        setIsAdmin(false);
         return false;
       }
 
@@ -50,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return adminStatus;
     } catch (error) {
       console.error('Error checking admin role:', error);
+      setIsAdmin(false);
       return false;
     }
   };
@@ -61,11 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
-        
+
         // Defer admin check with setTimeout to avoid deadlock
         if (session?.user) {
+          const uid = session.user.id;
           setTimeout(() => {
-            checkAdminRole();
+            checkAdminRole(uid);
           }, 0);
         } else {
           setIsAdmin(false);
@@ -78,11 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
-      
+
       if (session?.user) {
+        const uid = session.user.id;
         setTimeout(() => {
-          checkAdminRole();
+          checkAdminRole(uid);
         }, 0);
+      } else {
+        setIsAdmin(false);
       }
     });
 
