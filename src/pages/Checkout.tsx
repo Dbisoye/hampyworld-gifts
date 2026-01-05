@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
-import { createOrder } from '@/data/store';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const Checkout = () => {
   const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -19,6 +21,7 @@ const Checkout = () => {
   
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
     address: ''
   });
@@ -34,7 +37,7 @@ const Checkout = () => {
     if (!formData.name.trim() || !formData.phone.trim() || !formData.address.trim()) {
       toast({
         title: "Please fill all fields",
-        description: "All fields are required to place the order.",
+        description: "Name, phone and address are required.",
         variant: "destructive"
       });
       return;
@@ -42,19 +45,60 @@ const Checkout = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Create order in Supabase
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id || null,
+          customer_name: formData.name.trim(),
+          customer_email: formData.email.trim() || null,
+          customer_phone: formData.phone.trim(),
+          customer_address: formData.address.trim(),
+          subtotal: total,
+          total: total,
+          status: 'pending',
+          payment_status: 'pending',
+          payment_method: 'cod'
+        })
+        .select()
+        .single();
 
-    const order = createOrder({
-      name: formData.name.trim(),
-      phone: formData.phone.trim(),
-      address: formData.address.trim()
-    });
+      if (orderError) throw orderError;
 
-    setOrderId(order.id);
-    setOrderPlaced(true);
-    setIsSubmitting(false);
-    clearCart();
+      // Create order items
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_price: item.product.price,
+        quantity: item.quantity
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      setOrderId(order.id.slice(0, 8).toUpperCase());
+      setOrderPlaced(true);
+      clearCart();
+      
+      toast({
+        title: "Order placed successfully!",
+        description: "We'll contact you soon for delivery.",
+      });
+    } catch (error: any) {
+      console.error('Order error:', error);
+      toast({
+        title: "Order failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (orderPlaced) {
@@ -78,9 +122,14 @@ const Checkout = () => {
             <p className="text-sm text-muted-foreground mt-4">
               Payment: Cash on Delivery
             </p>
-            <Button asChild className="mt-8">
-              <Link to="/shop">Continue Shopping</Link>
-            </Button>
+            <div className="flex gap-4 justify-center mt-8">
+              <Button asChild variant="outline">
+                <Link to="/orders">Track Order</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/shop">Continue Shopping</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </Layout>
@@ -107,7 +156,7 @@ const Checkout = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -119,7 +168,19 @@ const Checkout = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="email">Email (Optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Enter your email for order updates"
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -132,7 +193,7 @@ const Checkout = () => {
               </div>
 
               <div>
-                <Label htmlFor="address">Delivery Address</Label>
+                <Label htmlFor="address">Delivery Address *</Label>
                 <Textarea
                   id="address"
                   value={formData.address}
