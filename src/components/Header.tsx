@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Gift, Menu, X, User, LogOut, Package } from 'lucide-react';
+import { ShoppingCart, Gift, Menu, X, User, LogOut } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
@@ -31,9 +31,6 @@ const Header = () => {
             <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
               Shop
             </Link>
-            <Link to="/orders" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
-              My Orders
-            </Link>
             {isAdmin && (
               <Link to="/admin" className="text-accent hover:text-accent/80 transition-colors font-medium">
                 Admin
@@ -48,10 +45,12 @@ const Header = () => {
               )}
             </Link>
             {user ? (
-              <Button variant="ghost" size="sm" onClick={signOut} className="gap-2 hover:bg-accent/10">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
+              <Link to="/account">
+                <Button variant="outline" size="sm" className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent">
+                  <User className="w-4 h-4" />
+                  My Account
+                </Button>
+              </Link>
             ) : (
               <Link to="/auth">
                 <Button variant="outline" size="sm" className="gap-2 border-accent/30 hover:bg-accent/10 hover:border-accent">
@@ -88,19 +87,16 @@ const Header = () => {
               <Link to="/shop" className="text-foreground hover:text-accent transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Shop
               </Link>
-              <Link to="/orders" className="text-foreground hover:text-accent transition-colors font-medium py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Package className="w-4 h-4" />
-                My Orders
-              </Link>
               {isAdmin && (
                 <Link to="/admin" className="text-accent hover:text-accent/80 transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                   Admin
                 </Link>
               )}
               {user ? (
-                <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="text-left text-foreground hover:text-accent transition-colors font-medium py-2">
-                  Logout
-                </button>
+                <Link to="/account" className="text-foreground hover:text-accent transition-colors font-medium py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                  <User className="w-4 h-4" />
+                  My Account
+                </Link>
               ) : (
                 <Link to="/auth" className="text-foreground hover:text-accent transition-colors font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                   Sign In
