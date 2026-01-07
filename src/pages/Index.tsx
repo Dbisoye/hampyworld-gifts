@@ -16,30 +16,30 @@ const Index = () => {
         <div className="absolute inset-0 gradient-luxury" />
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-64 h-64 bg-accent/30 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-[float_8s_ease-in-out_infinite_1s]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl animate-[float_10s_ease-in-out_infinite_0.5s]" />
         </div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in">
+              <Sparkles className="w-4 h-4 animate-pulse" />
               Handcrafted with Love & Care
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-foreground leading-tight tracking-tight animate-fade-in [animation-delay:200ms]">
               Luxury Gift Hampers for{' '}
               <span className="text-gradient-gold">Every Moment</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed animate-fade-in [animation-delay:400ms]">
               Celebrate life's precious moments with our meticulously curated gift hampers. 
               From birthdays to anniversaries, each creation is a masterpiece of thoughtfulness.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-              <Button asChild size="lg" className="text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-fade-in [animation-delay:600ms]">
+              <Button asChild size="lg" className="text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow hover:scale-105 transition-transform">
                 <Link to="/shop">
                   Explore Collection <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-10 h-14 border-accent/30 hover:bg-accent/10 hover:border-accent">
+              <Button asChild variant="outline" size="lg" className="text-lg px-10 h-14 border-accent/30 hover:bg-accent/10 hover:border-accent hover:scale-105 transition-transform">
                 <Link to="/shop?category=love">
                   <Heart className="mr-2 w-5 h-5 text-accent" /> Love Hampers
                 </Link>
@@ -60,9 +60,10 @@ const Index = () => {
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="flex items-center gap-5 justify-center md:justify-start p-6 rounded-2xl hover:bg-secondary/50 transition-colors"
+                className="flex items-center gap-5 justify-center md:justify-start p-6 rounded-2xl hover:bg-secondary/50 transition-all duration-300 hover:scale-105 animate-fade-in"
+                style={{ animationDelay: `${index * 150}ms` }}
               >
-                <div className="w-16 h-16 gradient-gold rounded-2xl flex items-center justify-center shadow-gold shrink-0">
+                <div className="w-16 h-16 gradient-gold rounded-2xl flex items-center justify-center shadow-gold shrink-0 group-hover:shadow-lg transition-shadow">
                   <feature.icon className="w-8 h-8 text-accent-foreground" />
                 </div>
                 <div>
@@ -79,11 +80,11 @@ const Index = () => {
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14">
-            <span className="text-accent text-sm font-medium uppercase tracking-widest">Explore</span>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mt-2">
+            <span className="text-accent text-sm font-medium uppercase tracking-widest animate-fade-in">Explore</span>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mt-2 animate-fade-in [animation-delay:100ms]">
               Shop by Occasion
             </h2>
-            <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+            <p className="text-muted-foreground mt-4 max-w-xl mx-auto animate-fade-in [animation-delay:200ms]">
               Discover the perfect hamper tailored for every special moment in life
             </p>
           </div>
@@ -92,11 +93,11 @@ const Index = () => {
               <Link
                 key={category.id}
                 to={`/shop?category=${category.id}`}
-                className="group card-luxury p-8 hover-lift text-center"
+                className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-shadow">
-                  <Gift className="w-10 h-10 text-accent-foreground" />
+                <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
+                  <Gift className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
                 </div>
                 <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
                   {category.name}
@@ -137,20 +138,20 @@ const Index = () => {
       {/* CTA */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="gradient-dark rounded-3xl p-16 text-center text-primary-foreground relative overflow-hidden">
+          <div className="gradient-dark rounded-3xl p-16 text-center text-primary-foreground relative overflow-hidden hover:scale-[1.02] transition-transform duration-500">
             <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite]" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-[float_8s_ease-in-out_infinite_1s]" />
             </div>
             <div className="relative">
-              <h2 className="text-4xl md:text-5xl font-display font-bold">
+              <h2 className="text-4xl md:text-5xl font-display font-bold animate-fade-in">
                 Ready to Spread Joy?
               </h2>
-              <p className="mt-6 text-primary-foreground/70 max-w-xl mx-auto text-lg leading-relaxed">
+              <p className="mt-6 text-primary-foreground/70 max-w-xl mx-auto text-lg leading-relaxed animate-fade-in [animation-delay:200ms]">
                 Browse our exclusive collection of thoughtfully curated gift hampers 
                 and make someone's day truly extraordinary.
               </p>
-              <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow">
+              <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow hover:scale-105 transition-transform animate-fade-in [animation-delay:400ms]">
                 <Link to="/shop">
                   Explore All Hampers <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>

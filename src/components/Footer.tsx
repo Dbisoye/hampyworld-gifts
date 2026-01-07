@@ -46,8 +46,8 @@ const Footer = () => {
             <h4 className="font-semibold text-lg mb-4 tracking-luxe">Contact</h4>
             <ul className="space-y-3 text-primary-foreground/70">
               <li>support@hampyworld.com</li>
-              <li>+91 98765 43210</li>
-              <li>Mon - Sat: 10AM - 7PM</li>
+              <li>+91 7428601664</li>
+              <li>Mon - Sun: 10AM - 7PM</li>
             </ul>
           </div>
         </div>
