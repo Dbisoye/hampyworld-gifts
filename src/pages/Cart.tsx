@@ -43,7 +43,7 @@ const Cart = () => {
               >
                 <Link to={`/product/${item.product.id}`} className="shrink-0">
                   <img 
-                    src={item.product.image} 
+                    src={item.product.image_url || '/placeholder.svg'} 
                     alt={item.product.name}
                     className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-xl"
                   />
@@ -56,7 +56,7 @@ const Cart = () => {
                     {item.product.name}
                   </Link>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {item.product.category.replace('-', ' ')}
+                    {item.product.categories?.name || 'Gift Hamper'}
                   </p>
                   <p className="text-lg font-bold text-primary mt-2">
                     ₹{item.product.price.toLocaleString()}

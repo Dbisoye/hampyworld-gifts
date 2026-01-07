@@ -1,17 +1,51 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Minus, Plus, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { getProductById } from '@/data/store';
+import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { Product } from '@/types/product';
 
 const ProductDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || '');
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, categories(*)')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!error && data) {
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4" />
+            <div className="h-4 bg-muted rounded w-32 mx-auto" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -34,6 +68,8 @@ const ProductDetails = () => {
     });
   };
 
+  const categoryName = product.categories?.name || 'Gift';
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -49,7 +85,7 @@ const ProductDetails = () => {
           {/* Product Image */}
           <div className="aspect-square rounded-3xl overflow-hidden bg-muted">
             <img 
-              src={product.image} 
+              src={product.image_url || '/placeholder.svg'} 
               alt={product.name}
               className="w-full h-full object-cover"
             />
@@ -58,7 +94,7 @@ const ProductDetails = () => {
           {/* Product Info */}
           <div className="flex flex-col">
             <span className="text-sm font-medium text-accent uppercase tracking-wider">
-              {product.category.replace('-', ' ')} Gift Hamper
+              {categoryName} Gift Hamper
             </span>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
               {product.name}
@@ -67,7 +103,7 @@ const ProductDetails = () => {
               ₹{product.price.toLocaleString()}
             </p>
             <p className="text-muted-foreground mt-6 text-lg leading-relaxed">
-              {product.description}
+              {product.description || 'A beautiful gift hamper'}
             </p>
 
             {/* Features */}

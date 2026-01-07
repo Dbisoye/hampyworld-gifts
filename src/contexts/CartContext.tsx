@@ -1,14 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { 
-  CartItem, 
-  Product, 
-  getCart, 
-  addToCart as addToCartStore, 
-  updateCartQuantity as updateQuantityStore,
-  removeFromCart as removeFromCartStore,
-  clearCart as clearCartStore,
-  getCartTotal 
-} from '@/data/store';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Product, CartItem } from '@/types/product';
 
 interface CartContextType {
   items: CartItem[];
@@ -22,30 +13,64 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const CART_STORAGE_KEY = 'hamper-cart';
+
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveCartToStorage = (items: CartItem[]) => {
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+};
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>(getCart());
+  const [items, setItems] = useState<CartItem[]>(loadCartFromStorage);
+
+  useEffect(() => {
+    saveCartToStorage(items);
+  }, [items]);
 
   const addToCart = (product: Product, quantity = 1) => {
-    const updated = addToCartStore(product, quantity);
-    setItems(updated);
+    setItems(currentItems => {
+      const existingIndex = currentItems.findIndex(item => item.product.id === product.id);
+      if (existingIndex >= 0) {
+        const newItems = [...currentItems];
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          quantity: newItems[existingIndex].quantity + quantity
+        };
+        return newItems;
+      }
+      return [...currentItems, { product, quantity }];
+    });
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    const updated = updateQuantityStore(productId, quantity);
-    setItems(updated);
+    setItems(currentItems => {
+      if (quantity <= 0) {
+        return currentItems.filter(item => item.product.id !== productId);
+      }
+      return currentItems.map(item =>
+        item.product.id === productId ? { ...item, quantity } : item
+      );
+    });
   };
 
   const removeFromCart = (productId: string) => {
-    const updated = removeFromCartStore(productId);
-    setItems(updated);
+    setItems(currentItems => currentItems.filter(item => item.product.id !== productId));
   };
 
   const clearCart = () => {
-    clearCartStore();
     setItems([]);
+    localStorage.removeItem(CART_STORAGE_KEY);
   };
 
-  const total = getCartTotal();
+  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
