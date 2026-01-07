@@ -232,7 +232,7 @@ const Checkout = () => {
                 {items.map((item) => (
                   <div key={item.product.id} className="flex gap-4">
                     <img 
-                      src={item.product.image} 
+                      src={item.product.image_url || '/placeholder.svg'} 
                       alt={item.product.name}
                       className="w-16 h-16 object-cover rounded-lg"
                     />

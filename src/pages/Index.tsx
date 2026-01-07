@@ -1,13 +1,43 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Gift, Heart, Package, Truck, Sparkles, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { getProducts, categories } from '@/data/store';
+import { supabase } from '@/integrations/supabase/client';
+import { Product, Category } from '@/types/product';
 
 const Index = () => {
-  const products = getProducts();
-  const featuredProducts = products.slice(0, 4);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [productsRes, categoriesRes] = await Promise.all([
+        supabase
+          .from('products')
+          .select('*, categories(*)')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(4),
+        supabase
+          .from('categories')
+          .select('*')
+          .order('name')
+      ]);
+
+      if (!productsRes.error && productsRes.data) {
+        setProducts(productsRes.data);
+      }
+      if (!categoriesRes.error && categoriesRes.data) {
+        setCategories(categoriesRes.data);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <Layout>
@@ -89,10 +119,10 @@ const Index = () => {
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {categories.filter(c => c.id !== 'all').map((category, index) => (
+            {categories.map((category, index) => (
               <Link
                 key={category.id}
-                to={`/shop?category=${category.id}`}
+                to={`/shop?category=${category.slug}`}
                 className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -125,13 +155,25 @@ const Index = () => {
               </Link>
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product, index) => (
-              <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="animate-pulse bg-card rounded-xl h-80" />
+              ))}
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product, index) => (
+                <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No products available yet.</p>
+            </div>
+          )}
         </div>
       </section>
 

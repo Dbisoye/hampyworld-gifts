@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Sparkles } from 'lucide-react';
-import { Product } from '@/data/store';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { Product } from '@/types/product';
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +22,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
+  const categoryName = product.categories?.name || 'Gift';
+
   return (
     <Link 
       to={`/product/${product.id}`}
@@ -29,14 +31,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
     >
       <div className="aspect-square overflow-hidden bg-muted relative img-overlay">
         <img 
-          src={product.image} 
+          src={product.image_url || '/placeholder.svg'} 
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-3 left-3">
           <span className="inline-flex items-center gap-1 bg-accent/90 text-accent-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-sm">
             <Sparkles className="w-3 h-3" />
-            {product.category.replace('-', ' ')}
+            {categoryName}
           </span>
         </div>
       </div>
@@ -45,7 +47,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.name}
         </h3>
         <p className="text-muted-foreground text-sm mt-2 line-clamp-2 leading-relaxed">
-          {product.description}
+          {product.description || 'A beautiful gift hamper'}
         </p>
         <div className="flex items-center justify-between mt-5 pt-5 border-t border-border/50">
           <div>
