@@ -26,17 +26,34 @@ interface Category {
   image_url: string | null;
 }
 
+interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+}
+
+interface ProductVideo {
+  id: string;
+  product_id: string;
+  video_url: string;
+  display_order: number;
+}
+
 interface Product {
   id: string;
   name: string;
   description: string | null;
   price: number;
+  original_price: number | null;
   category_id: string | null;
   image_url: string | null;
   video_url: string | null;
   stock: number;
   is_active: boolean;
   categories?: Category;
+  product_images?: ProductImage[];
+  product_videos?: ProductVideo[];
 }
 
 interface Coupon {
@@ -103,12 +120,17 @@ const Admin = () => {
     name: '',
     description: '',
     price: '',
+    original_price: '',
     category_id: '',
     image_url: '',
     video_url: '',
     stock: '0',
     is_active: true,
   });
+
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [additionalVideos, setAdditionalVideos] = useState<string[]>([]);
+  const [uploadingAdditionalMedia, setUploadingAdditionalMedia] = useState(false);
 
   const [categoryForm, setCategoryForm] = useState({
     name: '',
@@ -145,13 +167,13 @@ const Admin = () => {
     setLoading(true);
     try {
       const [productsRes, categoriesRes, couponsRes, ordersRes] = await Promise.all([
-        supabase.from('products').select('*, categories(*)').order('created_at', { ascending: false }),
+        supabase.from('products').select('*, categories(*), product_images(*), product_videos(*)').order('created_at', { ascending: false }),
         supabase.from('categories').select('*').order('name'),
         supabase.from('coupons').select('*').order('created_at', { ascending: false }),
         supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false }),
       ]);
 
-      if (productsRes.data) setProducts(productsRes.data);
+      if (productsRes.data) setProducts(productsRes.data as any);
       if (categoriesRes.data) setCategories(categoriesRes.data);
       if (couponsRes.data) setCoupons(couponsRes.data);
       if (ordersRes.data) setOrders(ordersRes.data);
@@ -168,8 +190,9 @@ const Admin = () => {
     }
   }, [isAdmin, fetchData]);
 
-  const handleFileUpload = async (file: File, type: 'image' | 'video') => {
-    if (type === 'image') setUploadingImage(true);
+  const handleFileUpload = async (file: File, type: 'image' | 'video', isAdditional = false) => {
+    if (isAdditional) setUploadingAdditionalMedia(true);
+    else if (type === 'image') setUploadingImage(true);
     else setUploadingVideo(true);
 
     try {
@@ -187,10 +210,18 @@ const Admin = () => {
         .from('product-media')
         .getPublicUrl(filePath);
 
-      if (type === 'image') {
-        setProductForm(prev => ({ ...prev, image_url: publicUrl }));
+      if (isAdditional) {
+        if (type === 'image') {
+          setAdditionalImages(prev => [...prev, publicUrl]);
+        } else {
+          setAdditionalVideos(prev => [...prev, publicUrl]);
+        }
       } else {
-        setProductForm(prev => ({ ...prev, video_url: publicUrl }));
+        if (type === 'image') {
+          setProductForm(prev => ({ ...prev, image_url: publicUrl }));
+        } else {
+          setProductForm(prev => ({ ...prev, video_url: publicUrl }));
+        }
       }
 
       toast({ title: `${type === 'image' ? 'Image' : 'Video'} uploaded successfully!` });
@@ -201,7 +232,8 @@ const Admin = () => {
         variant: 'destructive',
       });
     } finally {
-      if (type === 'image') setUploadingImage(false);
+      if (isAdditional) setUploadingAdditionalMedia(false);
+      else if (type === 'image') setUploadingImage(false);
       else setUploadingVideo(false);
     }
   };
@@ -213,6 +245,7 @@ const Admin = () => {
       name: productForm.name.trim(),
       description: productForm.description.trim(),
       price: parseFloat(productForm.price),
+      original_price: productForm.original_price ? parseFloat(productForm.original_price) : null,
       category_id: productForm.category_id || null,
       image_url: productForm.image_url || null,
       video_url: productForm.video_url || null,
@@ -221,19 +254,45 @@ const Admin = () => {
     };
 
     try {
+      let productId = editingProduct?.id;
+      
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
           .update(data)
           .eq('id', editingProduct.id);
         if (error) throw error;
-        toast({ title: 'Product updated!' });
+        
+        // Delete existing additional images and videos
+        await supabase.from('product_images').delete().eq('product_id', editingProduct.id);
+        await supabase.from('product_videos').delete().eq('product_id', editingProduct.id);
       } else {
-        const { error } = await supabase.from('products').insert(data);
+        const { data: newProduct, error } = await supabase.from('products').insert(data).select().single();
         if (error) throw error;
-        toast({ title: 'Product added!' });
+        productId = newProduct.id;
       }
 
+      // Insert additional images
+      if (additionalImages.length > 0 && productId) {
+        const imageInserts = additionalImages.map((url, idx) => ({
+          product_id: productId,
+          image_url: url,
+          display_order: idx,
+        }));
+        await supabase.from('product_images').insert(imageInserts);
+      }
+
+      // Insert additional videos
+      if (additionalVideos.length > 0 && productId) {
+        const videoInserts = additionalVideos.map((url, idx) => ({
+          product_id: productId,
+          video_url: url,
+          display_order: idx,
+        }));
+        await supabase.from('product_videos').insert(videoInserts);
+      }
+
+      toast({ title: editingProduct ? 'Product updated!' : 'Product added!' });
       setProductDialogOpen(false);
       resetProductForm();
       fetchData();
@@ -439,9 +498,11 @@ const Admin = () => {
 
   const resetProductForm = () => {
     setProductForm({
-      name: '', description: '', price: '', category_id: '',
+      name: '', description: '', price: '', original_price: '', category_id: '',
       image_url: '', video_url: '', stock: '0', is_active: true,
     });
+    setAdditionalImages([]);
+    setAdditionalVideos([]);
     setEditingProduct(null);
   };
 
@@ -464,12 +525,15 @@ const Admin = () => {
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
+      original_price: product.original_price?.toString() || '',
       category_id: product.category_id || '',
       image_url: product.image_url || '',
       video_url: product.video_url || '',
       stock: product.stock.toString(),
       is_active: product.is_active,
     });
+    setAdditionalImages(product.product_images?.map(img => img.image_url) || []);
+    setAdditionalVideos(product.product_videos?.map(vid => vid.video_url) || []);
     setProductDialogOpen(true);
   };
 
@@ -583,28 +647,34 @@ const Admin = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label>Price (₹)</Label>
+                        <Label>Original Price (₹) <span className="text-xs text-muted-foreground">(optional - for showing discount)</span></Label>
+                        <Input type="number" value={productForm.original_price} onChange={(e) => setProductForm({...productForm, original_price: e.target.value})} placeholder="MRP" />
+                      </div>
+                      <div>
+                        <Label>Sale Price (₹) *</Label>
                         <Input type="number" value={productForm.price} onChange={(e) => setProductForm({...productForm, price: e.target.value})} required />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>Stock</Label>
                         <Input type="number" value={productForm.stock} onChange={(e) => setProductForm({...productForm, stock: e.target.value})} />
                       </div>
-                    </div>
-                    <div>
-                      <Label>Category</Label>
-                      <Select value={productForm.category_id} onValueChange={(v) => setProductForm({...productForm, category_id: v})}>
-                        <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                        <SelectContent>
-                          {categories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div>
+                        <Label>Category</Label>
+                        <Select value={productForm.category_id} onValueChange={(v) => setProductForm({...productForm, category_id: v})}>
+                          <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                          <SelectContent>
+                            {categories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     
                     <div>
-                      <Label>Product Image</Label>
+                      <Label>Main Product Image</Label>
                       <div className="flex gap-2">
                         <Input 
                           value={productForm.image_url} 
@@ -629,7 +699,40 @@ const Admin = () => {
                     </div>
 
                     <div>
-                      <Label>Product Video</Label>
+                      <Label>Additional Images</Label>
+                      <div className="flex gap-2 mb-2">
+                        <label className="cursor-pointer flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'image', true)}
+                          />
+                          <Button type="button" variant="outline" className="w-full gap-2" disabled={uploadingAdditionalMedia} asChild>
+                            <span>{uploadingAdditionalMedia ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" />Add Image</>}</span>
+                          </Button>
+                        </label>
+                      </div>
+                      {additionalImages.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {additionalImages.map((url, idx) => (
+                            <div key={idx} className="relative">
+                              <img src={url} alt={`Additional ${idx + 1}`} className="w-16 h-16 object-cover rounded" />
+                              <button
+                                type="button"
+                                onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== idx))}
+                                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label>Main Product Video</Label>
                       <div className="flex gap-2">
                         <Input 
                           value={productForm.video_url} 
@@ -648,6 +751,40 @@ const Admin = () => {
                           </Button>
                         </label>
                       </div>
+                    </div>
+
+                    <div>
+                      <Label>Additional Videos</Label>
+                      <div className="flex gap-2 mb-2">
+                        <label className="cursor-pointer flex-1">
+                          <input
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'video', true)}
+                          />
+                          <Button type="button" variant="outline" className="w-full gap-2" disabled={uploadingAdditionalMedia} asChild>
+                            <span>{uploadingAdditionalMedia ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" />Add Video</>}</span>
+                          </Button>
+                        </label>
+                      </div>
+                      {additionalVideos.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {additionalVideos.map((url, idx) => (
+                            <div key={idx} className="relative bg-muted rounded p-2 text-xs flex items-center gap-2">
+                              <Video className="w-4 h-4" />
+                              <span>Video {idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => setAdditionalVideos(prev => prev.filter((_, i) => i !== idx))}
+                                className="bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs ml-1"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">

@@ -14,6 +14,7 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -21,12 +22,12 @@ const ProductDetails = () => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(*)')
+        .select('*, categories(*), product_images(*), product_videos(*)')
         .eq('id', id)
         .maybeSingle();
 
       if (!error && data) {
-        setProduct(data);
+        setProduct(data as any);
       }
       setLoading(false);
     };
@@ -82,13 +83,61 @@ const ProductDetails = () => {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Image */}
-          <div className="aspect-square rounded-3xl overflow-hidden bg-muted">
-            <img 
-              src={product.image_url || '/placeholder.svg'} 
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+          {/* Product Images */}
+          <div>
+            <div className="aspect-square rounded-3xl overflow-hidden bg-muted mb-4">
+              <img 
+                src={selectedImage || product.image_url || '/placeholder.svg'} 
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Thumbnail Gallery */}
+            {((product.product_images && product.product_images.length > 0) || product.image_url) && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {product.image_url && (
+                  <button
+                    onClick={() => setSelectedImage(product.image_url)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
+                      (!selectedImage || selectedImage === product.image_url) ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={product.image_url} alt="Main" className="w-full h-full object-cover" />
+                  </button>
+                )}
+                {product.product_images?.sort((a, b) => a.display_order - b.display_order).map((img) => (
+                  <button
+                    key={img.id}
+                    onClick={() => setSelectedImage(img.image_url)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
+                      selectedImage === img.image_url ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Videos */}
+            {product.product_videos && product.product_videos.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Product Videos</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {product.product_videos.map((video) => (
+                    <video key={video.id} controls className="rounded-lg w-full aspect-video bg-muted">
+                      <source src={video.video_url} />
+                    </video>
+                  ))}
+                </div>
+              </div>
+            )}
+            {product.video_url && (
+              <div className="mt-4">
+                <video controls className="rounded-lg w-full aspect-video bg-muted">
+                  <source src={product.video_url} />
+                </video>
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -99,9 +148,21 @@ const ProductDetails = () => {
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-2">
               {product.name}
             </h1>
-            <p className="text-3xl font-bold text-primary mt-4">
-              ₹{product.price.toLocaleString()}
-            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <p className="text-3xl font-bold text-primary">
+                ₹{product.price.toLocaleString()}
+              </p>
+              {product.original_price && product.original_price > product.price && (
+                <>
+                  <p className="text-xl text-muted-foreground line-through">
+                    ₹{product.original_price.toLocaleString()}
+                  </p>
+                  <span className="bg-green-100 text-green-700 text-sm font-semibold px-2 py-1 rounded">
+                    {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF
+                  </span>
+                </>
+              )}
+            </div>
             <p className="text-muted-foreground mt-6 text-lg leading-relaxed">
               {product.description || 'A beautiful gift hamper'}
             </p>

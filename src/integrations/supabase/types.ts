@@ -238,6 +238,70 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_videos: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          product_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          product_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          product_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_videos_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category_id: string | null
@@ -247,6 +311,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           name: string
+          original_price: number | null
           price: number
           stock: number | null
           updated_at: string
@@ -260,6 +325,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           name: string
+          original_price?: number | null
           price: number
           stock?: number | null
           updated_at?: string
@@ -273,6 +339,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           name?: string
+          original_price?: number | null
           price?: number
           stock?: number | null
           updated_at?: string

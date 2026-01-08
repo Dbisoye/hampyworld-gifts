@@ -52,9 +52,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center justify-between mt-5 pt-5 border-t border-border/50">
           <div>
             <span className="text-xs text-muted-foreground">Price</span>
-            <p className="text-xl font-bold text-foreground">
-              ₹{product.price.toLocaleString()}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xl font-bold text-foreground">
+                ₹{product.price.toLocaleString()}
+              </p>
+              {product.original_price && product.original_price > product.price && (
+                <p className="text-sm text-muted-foreground line-through">
+                  ₹{product.original_price.toLocaleString()}
+                </p>
+              )}
+            </div>
+            {product.original_price && product.original_price > product.price && (
+              <span className="text-xs text-green-600 font-medium">
+                {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% off
+              </span>
+            )}
           </div>
           <Button 
             size="sm" 
