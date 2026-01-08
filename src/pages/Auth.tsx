@@ -61,27 +61,18 @@ const Auth = () => {
     return result.success ? '' : result.error.errors[0].message;
   };
 
-  const handleSendOtp = async (type: 'email' | 'phone') => {
-    const identifier = type === 'email' ? formData.email : formData.phone;
-    
-    if (type === 'email') {
-      const error = validateEmail(identifier);
-      if (error) {
-        setErrors(prev => ({ ...prev, email: error }));
-        return;
-      }
-    } else {
-      const error = validatePhone(identifier);
-      if (error) {
-        setErrors(prev => ({ ...prev, phone: error }));
-        return;
-      }
+  const handleSendOtp = async () => {
+    const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
+    const error = validatePhone(phone);
+    if (error) {
+      setErrors(prev => ({ ...prev, phone: error }));
+      return;
     }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { identifier, type },
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: phone,
       });
 
       if (error) throw error;
@@ -89,7 +80,7 @@ const Auth = () => {
       setOtpSent(true);
       toast({
         title: 'OTP Sent!',
-        description: `Verification code sent to your ${type}`,
+        description: 'Verification code sent to your phone',
       });
     } catch (error: any) {
       toast({
@@ -102,22 +93,24 @@ const Auth = () => {
     }
   };
 
-  const handleVerifyOtp = async (type: 'email' | 'phone') => {
-    const identifier = type === 'email' ? formData.email : formData.phone;
+  const handleVerifyOtp = async () => {
+    const phone = formData.phone.startsWith('+') ? formData.phone : `+91${formData.phone}`;
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { identifier, otp: formData.otp, type },
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: phone,
+        token: formData.otp,
+        type: 'sms',
       });
 
       if (error) throw error;
 
-      setOtpVerified(true);
       toast({
-        title: 'Verified!',
-        description: 'Your account has been verified',
+        title: 'Success!',
+        description: 'You have been signed in successfully',
       });
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -308,7 +301,7 @@ const Auth = () => {
                     <Button 
                       type="button" 
                       className="w-full gap-2"
-                      onClick={() => handleSendOtp('phone')}
+                      onClick={() => handleSendOtp()}
                       disabled={loading || !formData.phone}
                     >
                       {loading ? (
@@ -331,30 +324,33 @@ const Auth = () => {
                           onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
                           placeholder="Enter 6-digit OTP"
                           maxLength={6}
-                          disabled={otpVerified}
                         />
                       </div>
                       
                       <Button 
                         type="button" 
                         className="w-full gap-2"
-                        onClick={() => handleVerifyOtp('phone')}
-                        disabled={loading || formData.otp.length !== 6 || otpVerified}
+                        onClick={() => handleVerifyOtp()}
+                        disabled={loading || formData.otp.length !== 6}
                       >
                         {loading ? (
                           <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
-                        ) : otpVerified ? (
-                          'Verified ✓'
                         ) : (
-                          'Verify OTP'
+                          'Verify & Sign In'
                         )}
                       </Button>
 
-                      {otpVerified && (
-                        <p className="text-sm text-muted-foreground text-center">
-                          Now complete signup with email & password above
-                        </p>
-                      )}
+                      <Button 
+                        type="button" 
+                        variant="ghost"
+                        className="w-full"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setFormData({ ...formData, otp: '' });
+                        }}
+                      >
+                        Change Phone Number
+                      </Button>
                     </>
                   )}
                 </div>
