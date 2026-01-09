@@ -208,6 +208,30 @@ export type Database = {
           },
         ]
       }
+      otp_rate_limits: {
+        Row: {
+          attempt_count: number
+          created_at: string
+          id: string
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          identifier: string
+          window_start?: string
+        }
+        Update: {
+          attempt_count?: number
+          created_at?: string
+          id?: string
+          identifier?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       otp_verifications: {
         Row: {
           created_at: string
