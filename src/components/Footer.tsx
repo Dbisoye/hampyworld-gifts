@@ -52,7 +52,17 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="divider-gold my-10" />
+        {/* Return Policy */}
+        <div className="bg-primary-foreground/5 rounded-xl p-6 my-8">
+          <h4 className="font-semibold text-lg mb-2 tracking-luxe">Return Policy</h4>
+          <p className="text-primary-foreground/70 text-sm">
+            We offer a <span className="text-accent font-semibold">3-day return policy</span> for damaged products. 
+            If you receive a damaged item, please contact us within 3 days of delivery with photos of the damage. 
+            We'll arrange a replacement or full refund.
+          </p>
+        </div>
+
+        <div className="divider-gold my-8" />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-primary-foreground/50 text-sm flex items-center gap-1">

@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, Wallet } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const Checkout = () => {
   const { items, total, clearCart } = useCart();
@@ -18,6 +25,8 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod');
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -25,6 +34,18 @@ const Checkout = () => {
     phone: '',
     address: ''
   });
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (items.length === 0 && !orderPlaced) {
     navigate('/cart');
@@ -59,7 +80,7 @@ const Checkout = () => {
           total: total,
           status: 'pending',
           payment_status: 'pending',
-          payment_method: 'cod'
+          payment_method: paymentMethod
         })
         .select()
         .single();
@@ -83,6 +104,78 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
+      if (paymentMethod === 'online') {
+        // Create Razorpay order
+        const { data: razorpayData, error: razorpayError } = await supabase.functions.invoke('create-razorpay-order', {
+          body: { order_id: order.id }
+        });
+
+        if (razorpayError || razorpayData?.error) {
+          throw new Error(razorpayData?.error || 'Failed to create payment order');
+        }
+
+        // Open Razorpay checkout
+        const options = {
+          key: razorpayData.key_id,
+          amount: razorpayData.amount,
+          currency: razorpayData.currency,
+          name: 'HampyWorld',
+          description: 'Gift Hamper Purchase',
+          order_id: razorpayData.razorpay_order_id,
+          handler: async function (response: any) {
+            // Verify payment
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                order_id: order.id
+              }
+            });
+
+            if (verifyError || verifyData?.error) {
+              toast({
+                title: "Payment verification failed",
+                description: "Please contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            setOrderId(order.id.slice(0, 8).toUpperCase());
+            setOrderPlaced(true);
+            clearCart();
+            
+            toast({
+              title: "Payment successful!",
+              description: "Your order has been confirmed.",
+            });
+          },
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.phone
+          },
+          theme: {
+            color: '#D97706'
+          },
+          modal: {
+            ondismiss: function() {
+              setIsSubmitting(false);
+              toast({
+                title: "Payment cancelled",
+                description: "Your order is saved. You can complete payment later.",
+              });
+            }
+          }
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+        return;
+      }
+
+      // COD order success
       setOrderId(order.id.slice(0, 8).toUpperCase());
       setOrderPlaced(true);
       clearCart();
@@ -207,9 +300,34 @@ const Checkout = () => {
                 />
               </div>
 
-              <div className="bg-secondary rounded-xl p-4">
-                <p className="text-sm font-medium text-foreground">Payment Method</p>
-                <p className="text-muted-foreground mt-1">Cash on Delivery (COD)</p>
+              <div>
+                <Label className="text-base font-medium text-foreground mb-4 block">Payment Method</Label>
+                <RadioGroup 
+                  value={paymentMethod} 
+                  onValueChange={(value) => setPaymentMethod(value as 'cod' | 'online')}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center space-x-3 p-4 rounded-xl border border-border hover:border-accent transition-colors cursor-pointer" onClick={() => setPaymentMethod('cod')}>
+                    <RadioGroupItem value="cod" id="cod" />
+                    <Label htmlFor="cod" className="flex items-center gap-3 cursor-pointer flex-1">
+                      <Wallet className="w-5 h-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Cash on Delivery</p>
+                        <p className="text-sm text-muted-foreground">Pay when your order arrives</p>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 rounded-xl border border-border hover:border-accent transition-colors cursor-pointer" onClick={() => setPaymentMethod('online')}>
+                    <RadioGroupItem value="online" id="online" />
+                    <Label htmlFor="online" className="flex items-center gap-3 cursor-pointer flex-1">
+                      <CreditCard className="w-5 h-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Pay Online</p>
+                        <p className="text-sm text-muted-foreground">UPI, Cards, Net Banking</p>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <Button 

@@ -181,6 +181,18 @@ const ProductDetails = () => {
                 <Check className="w-5 h-5 text-accent" />
                 <span>Cash on delivery available</span>
               </div>
+              <div className="flex items-center gap-3 text-foreground">
+                <Check className="w-5 h-5 text-accent" />
+                <span>3-day return policy for damaged items</span>
+              </div>
+            </div>
+
+            {/* Return Policy */}
+            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                <strong>Return Policy:</strong> We offer a 3-day return window for damaged products. 
+                Contact us within 3 days of delivery with photos if you receive a damaged item.
+              </p>
             </div>
 
             {/* Quantity Selector */}
