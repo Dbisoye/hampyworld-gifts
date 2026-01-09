@@ -15,6 +15,55 @@ const generateOTP = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+const checkRateLimit = async (
+  supabase: any,
+  identifier: string,
+  maxAttempts: number,
+  windowMinutes: number
+): Promise<{ allowed: boolean; remainingAttempts: number }> => {
+  const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000);
+
+  // Get recent attempts
+  const { data: existingRecord, error: fetchError } = await supabase
+    .from("otp_rate_limits")
+    .select("*")
+    .eq("identifier", identifier)
+    .gte("window_start", windowStart.toISOString())
+    .order("window_start", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error("Rate limit fetch error:", fetchError);
+    // Allow on error but log it
+    return { allowed: true, remainingAttempts: maxAttempts };
+  }
+
+  if (!existingRecord) {
+    // Create new rate limit record
+    await supabase
+      .from("otp_rate_limits")
+      .insert({
+        identifier,
+        attempt_count: 1,
+        window_start: new Date().toISOString(),
+      });
+    return { allowed: true, remainingAttempts: maxAttempts - 1 };
+  }
+
+  if (existingRecord.attempt_count >= maxAttempts) {
+    return { allowed: false, remainingAttempts: 0 };
+  }
+
+  // Increment attempt count
+  await supabase
+    .from("otp_rate_limits")
+    .update({ attempt_count: existingRecord.attempt_count + 1 })
+    .eq("id", existingRecord.id);
+
+  return { allowed: true, remainingAttempts: maxAttempts - existingRecord.attempt_count - 1 };
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -30,12 +79,41 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // Validate identifier format
+    if (type === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(identifier) || identifier.length > 255) {
+        return new Response(
+          JSON.stringify({ error: "Invalid email format" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else if (type === "phone") {
+      const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+      if (!phoneRegex.test(identifier)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid phone format" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check rate limit: max 3 OTP requests per identifier per hour
+    const { allowed, remainingAttempts } = await checkRateLimit(supabase, identifier, 3, 60);
+    
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many OTP requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store OTP in database
     const { error: dbError } = await supabase
@@ -128,10 +206,10 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log(`OTP sent successfully to ${type}: ${identifier}`);
+    console.log(`OTP sent successfully to ${type}: ${identifier.substring(0, 3)}***`);
 
     return new Response(
-      JSON.stringify({ success: true, message: `OTP sent to ${type}` }),
+      JSON.stringify({ success: true, message: `OTP sent to ${type}`, remainingAttempts }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
