@@ -1,14 +1,27 @@
-import { Link } from 'react-router-dom';
-import { ShoppingCart, Gift, Menu, X, User, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, Gift, Menu, X, User, Search } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const Header = () => {
   const { itemCount } = useCart();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setSearchOpen(false);
+    }
+  };
 
   return (
     <header className="glass sticky top-0 z-50 border-b border-border/50">
@@ -24,7 +37,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-foreground hover:text-accent transition-colors font-medium underline-gold py-1">
               Home
             </Link>
@@ -36,6 +49,34 @@ const Header = () => {
                 Admin
               </Link>
             )}
+            
+            {/* Search */}
+            {searchOpen ? (
+              <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-48 h-9"
+                  autoFocus
+                />
+                <Button type="submit" size="sm" variant="ghost" className="p-2">
+                  <Search className="w-4 h-4" />
+                </Button>
+                <Button type="button" size="sm" variant="ghost" className="p-2" onClick={() => setSearchOpen(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </form>
+            ) : (
+              <button 
+                onClick={() => setSearchOpen(true)} 
+                className="p-2 text-foreground hover:text-accent transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
+            
             <Link to="/cart" className="relative p-2 text-foreground hover:text-accent transition-colors">
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
@@ -62,7 +103,13 @@ const Header = () => {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-4">
+          <div className="flex md:hidden items-center gap-3">
+            <button 
+              onClick={() => setSearchOpen(!searchOpen)} 
+              className="p-2 text-foreground hover:text-accent transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
             <Link to="/cart" className="relative p-2 text-foreground">
               <ShoppingCart className="w-6 h-6" />
               {itemCount > 0 && (
@@ -76,6 +123,25 @@ const Header = () => {
             </button>
           </div>
         </div>
+
+        {/* Mobile Search */}
+        {searchOpen && (
+          <div className="md:hidden py-4 border-t border-border/50 animate-fade-in">
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1"
+                autoFocus
+              />
+              <Button type="submit" size="sm">
+                <Search className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
+        )}
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (

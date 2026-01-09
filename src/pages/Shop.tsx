@@ -8,6 +8,7 @@ import { Product, Category } from '@/types/product';
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') || 'all';
+  const searchQuery = searchParams.get('search') || '';
   const [activeCategory, setActiveCategory] = useState(categoryParam);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,6 +50,11 @@ const Shop = () => {
         }
       }
 
+      // Apply search filter
+      if (searchQuery) {
+        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+      }
+
       const { data, error } = await query;
 
       if (!error && data) {
@@ -58,15 +64,18 @@ const Shop = () => {
     };
 
     fetchProducts();
-  }, [activeCategory, categories]);
+  }, [activeCategory, categories, searchQuery]);
 
   const handleCategoryChange = (categorySlug: string) => {
     setActiveCategory(categorySlug);
-    if (categorySlug === 'all') {
-      setSearchParams({});
-    } else {
-      setSearchParams({ category: categorySlug });
+    const newParams: Record<string, string> = {};
+    if (categorySlug !== 'all') {
+      newParams.category = categorySlug;
     }
+    if (searchQuery) {
+      newParams.search = searchQuery;
+    }
+    setSearchParams(newParams);
   };
 
   return (
@@ -77,7 +86,9 @@ const Shop = () => {
             Our Gift Hampers
           </h1>
           <p className="text-muted-foreground text-center mt-3 max-w-2xl mx-auto">
-            Discover our handcrafted collection of gift hampers for every special occasion
+            {searchQuery 
+              ? `Search results for "${searchQuery}"` 
+              : 'Discover our handcrafted collection of gift hampers for every special occasion'}
           </p>
         </div>
       </div>

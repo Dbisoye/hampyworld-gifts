@@ -71,11 +71,12 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: phone,
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { identifier: phone, type: 'phone' }
       });
 
-      if (error) throw error;
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
 
       setOtpSent(true);
       toast({
@@ -98,19 +99,21 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: phone,
-        token: formData.otp,
-        type: 'sms',
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { identifier: phone, otp: formData.otp, type: 'phone' }
       });
 
-      if (error) throw error;
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
 
+      // After OTP verification, sign in with email/password or create session
+      // For now, show success and redirect to shop
       toast({
-        title: 'Success!',
-        description: 'You have been signed in successfully',
+        title: 'Phone Verified!',
+        description: 'Your phone number has been verified. Please sign in with email to complete.',
       });
-      navigate('/');
+      setOtpVerified(true);
+      setOtpSent(false);
     } catch (error: any) {
       toast({
         title: 'Error',
