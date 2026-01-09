@@ -23,6 +23,8 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -31,6 +33,7 @@ const Auth = () => {
     fullName: '',
     phone: '',
     otp: '',
+    emailOtp: '',
   });
 
   const [errors, setErrors] = useState({
@@ -59,6 +62,74 @@ const Auth = () => {
     if (!phone) return '';
     const result = phoneSchema.safeParse(phone);
     return result.success ? '' : result.error.errors[0].message;
+  };
+
+  const handleSendEmailOtp = async () => {
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setErrors(prev => ({ ...prev, email: emailError }));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await supabase.functions.invoke('send-otp', {
+        body: { identifier: formData.email, type: 'email' }
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      setEmailOtpSent(true);
+      toast({
+        title: 'OTP Sent!',
+        description: 'Verification code sent to your email',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send OTP',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    setLoading(true);
+    try {
+      const response = await supabase.functions.invoke('verify-otp', {
+        body: { identifier: formData.email, otp: formData.emailOtp, type: 'email' }
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
+
+      setEmailOtpVerified(true);
+      toast({
+        title: 'Email Verified!',
+        description: 'Your email has been verified. Completing signup...',
+      });
+
+      // Now complete the signup
+      const { error } = await signUp(formData.email, formData.password, formData.fullName);
+      if (error) throw error;
+
+      toast({
+        title: 'Account created!',
+        description: 'You have been signed up successfully',
+      });
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Verification failed',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendOtp = async () => {
@@ -136,6 +207,15 @@ const Auth = () => {
       return;
     }
 
+    // For signup, require email OTP verification first
+    if (!isLogin && !emailOtpVerified) {
+      if (!emailOtpSent) {
+        // Send OTP first
+        await handleSendEmailOtp();
+      }
+      return;
+    }
+
     setLoading(true);
     try {
       if (isLogin) {
@@ -145,15 +225,6 @@ const Auth = () => {
         toast({
           title: 'Welcome back!',
           description: 'You have been signed in successfully',
-        });
-        navigate('/');
-      } else {
-        const { error } = await signUp(formData.email, formData.password, formData.fullName);
-        if (error) throw error;
-        
-        toast({
-          title: 'Account created!',
-          description: 'You have been signed up successfully',
         });
         navigate('/');
       }
@@ -213,6 +284,7 @@ const Auth = () => {
                           className="pl-10"
                           placeholder="John Doe"
                           required={!isLogin}
+                          disabled={emailOtpSent}
                         />
                       </div>
                     </div>
@@ -233,6 +305,7 @@ const Auth = () => {
                         className="pl-10"
                         placeholder="you@example.com"
                         required
+                        disabled={emailOtpSent}
                       />
                     </div>
                     {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
@@ -253,6 +326,7 @@ const Auth = () => {
                         className="pl-10 pr-10"
                         placeholder="••••••••"
                         required
+                        disabled={emailOtpSent}
                       />
                       <button
                         type="button"
@@ -265,16 +339,65 @@ const Auth = () => {
                     {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
                   </div>
 
-                  <Button type="submit" className="w-full gap-2" disabled={loading}>
-                    {loading ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
-                    ) : (
-                      <>
-                        {isLogin ? 'Sign In' : 'Create Account'}
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </Button>
+                  {/* Email OTP verification for signup */}
+                  {!isLogin && emailOtpSent && !emailOtpVerified && (
+                    <div className="space-y-4 pt-2 border-t border-border">
+                      <p className="text-sm text-muted-foreground">
+                        We've sent a verification code to <strong>{formData.email}</strong>
+                      </p>
+                      <div>
+                        <Label htmlFor="emailOtp">Enter OTP</Label>
+                        <Input
+                          id="emailOtp"
+                          type="text"
+                          value={formData.emailOtp}
+                          onChange={(e) => setFormData({ ...formData, emailOtp: e.target.value })}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength={6}
+                        />
+                      </div>
+                      <Button 
+                        type="button" 
+                        className="w-full gap-2"
+                        onClick={handleVerifyEmailOtp}
+                        disabled={loading || formData.emailOtp.length !== 6}
+                      >
+                        {loading ? (
+                          <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                        ) : (
+                          <>
+                            Verify & Create Account
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="ghost"
+                        className="w-full"
+                        onClick={() => {
+                          setEmailOtpSent(false);
+                          setFormData({ ...formData, emailOtp: '' });
+                        }}
+                      >
+                        Change Email
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Show submit button only for login OR signup before OTP sent */}
+                  {(isLogin || !emailOtpSent) && (
+                    <Button type="submit" className="w-full gap-2" disabled={loading}>
+                      {loading ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                      ) : (
+                        <>
+                          {isLogin ? 'Sign In' : 'Send Verification Code'}
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </form>
               </TabsContent>
 
@@ -367,7 +490,9 @@ const Auth = () => {
                   setIsLogin(!isLogin);
                   setOtpSent(false);
                   setOtpVerified(false);
-                  setFormData({ email: '', password: '', fullName: '', phone: '', otp: '' });
+                  setEmailOtpSent(false);
+                  setEmailOtpVerified(false);
+                  setFormData({ email: '', password: '', fullName: '', phone: '', otp: '', emailOtp: '' });
                   setErrors({ email: '', password: '', phone: '' });
                 }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
