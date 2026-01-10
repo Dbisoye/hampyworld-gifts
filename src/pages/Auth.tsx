@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,8 @@ const Auth = () => {
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpVerified, setEmailOtpVerified] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailResendTimer, setEmailResendTimer] = useState(0);
+  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -47,6 +49,22 @@ const Auth = () => {
       navigate('/');
     }
   }, [user, navigate]);
+
+  // Timer countdown effect for email OTP
+  useEffect(() => {
+    if (emailResendTimer > 0) {
+      const timer = setTimeout(() => setEmailResendTimer(emailResendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [emailResendTimer]);
+
+  // Timer countdown effect for phone OTP
+  useEffect(() => {
+    if (phoneResendTimer > 0) {
+      const timer = setTimeout(() => setPhoneResendTimer(phoneResendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phoneResendTimer]);
 
   const validateEmail = (email: string) => {
     const result = emailSchema.safeParse(email);
@@ -81,9 +99,10 @@ const Auth = () => {
       if (response.data?.error) throw new Error(response.data.error);
 
       setEmailOtpSent(true);
+      setEmailResendTimer(60); // 60 second cooldown
       toast({
         title: 'OTP Sent!',
-        description: 'Verification code sent to your email',
+        description: 'Verification code sent to your email. Check spam folder if not received.',
       });
     } catch (error: any) {
       toast({
@@ -150,6 +169,7 @@ const Auth = () => {
       if (response.data?.error) throw new Error(response.data.error);
 
       setOtpSent(true);
+      setPhoneResendTimer(60); // 60 second cooldown
       toast({
         title: 'OTP Sent!',
         description: 'Verification code sent to your phone',
@@ -371,17 +391,30 @@ const Auth = () => {
                           </>
                         )}
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="ghost"
-                        className="w-full"
-                        onClick={() => {
-                          setEmailOtpSent(false);
-                          setFormData({ ...formData, emailOtp: '' });
-                        }}
-                      >
-                        Change Email
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          className="flex-1 gap-2"
+                          onClick={handleSendEmailOtp}
+                          disabled={loading || emailResendTimer > 0}
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          {emailResendTimer > 0 ? `Resend in ${emailResendTimer}s` : 'Resend OTP'}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="ghost"
+                          className="flex-1"
+                          onClick={() => {
+                            setEmailOtpSent(false);
+                            setFormData({ ...formData, emailOtp: '' });
+                            setEmailResendTimer(0);
+                          }}
+                        >
+                          Change Email
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -466,17 +499,30 @@ const Auth = () => {
                         )}
                       </Button>
 
-                      <Button 
-                        type="button" 
-                        variant="ghost"
-                        className="w-full"
-                        onClick={() => {
-                          setOtpSent(false);
-                          setFormData({ ...formData, otp: '' });
-                        }}
-                      >
-                        Change Phone Number
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          className="flex-1 gap-2"
+                          onClick={handleSendOtp}
+                          disabled={loading || phoneResendTimer > 0}
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          {phoneResendTimer > 0 ? `Resend in ${phoneResendTimer}s` : 'Resend OTP'}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="ghost"
+                          className="flex-1"
+                          onClick={() => {
+                            setOtpSent(false);
+                            setFormData({ ...formData, otp: '' });
+                            setPhoneResendTimer(0);
+                          }}
+                        >
+                          Change Phone
+                        </Button>
+                      </div>
                     </>
                   )}
                 </div>
