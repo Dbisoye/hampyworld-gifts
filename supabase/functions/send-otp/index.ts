@@ -144,7 +144,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (type === "email") {
-      // Send email via Brevo
+      // Send email via Brevo - use verified sender from Brevo account
+      const senderEmail = Deno.env.get("BREVO_SENDER_EMAIL") || "hamsterworld011@gmail.com";
+      const senderName = Deno.env.get("BREVO_SENDER_NAME") || "HampyWorld";
+      
       const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: {
@@ -153,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          sender: { name: "HampyWorld", email: "noreply@hampyworld.com" },
+          sender: { name: senderName, email: senderEmail },
           to: [{ email: identifier }],
           subject: "Your OTP for HampyWorld",
           htmlContent: `
