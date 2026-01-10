@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, RefreshCw, Chrome } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,12 @@ const phoneSchema = z.string().regex(/^\+?[1-9]\d{9,14}$/, 'Please enter a valid
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, signUp, signIn, isLoading } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [emailOtpSent, setEmailOtpSent] = useState(false);
@@ -28,6 +30,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [emailResendTimer, setEmailResendTimer] = useState(0);
   const [phoneResendTimer, setPhoneResendTimer] = useState(0);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -44,11 +49,19 @@ const Auth = () => {
     phone: '',
   });
 
+  // Check if this is a password reset flow
   useEffect(() => {
-    if (user) {
+    const type = searchParams.get('type');
+    if (type === 'recovery') {
+      setIsResettingPassword(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (user && !isResettingPassword) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, navigate, isResettingPassword]);
 
   // Timer countdown effect for email OTP
   useEffect(() => {
@@ -80,6 +93,94 @@ const Auth = () => {
     if (!phone) return '';
     const result = phoneSchema.safeParse(phone);
     return result.success ? '' : result.error.errors[0].message;
+  };
+
+  const handleForgotPassword = async () => {
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setErrors(prev => ({ ...prev, email: emailError }));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      });
+      
+      if (error) throw error;
+      
+      setResetEmailSent(true);
+      toast({
+        title: 'Reset Email Sent!',
+        description: 'Check your email for the password reset link.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send reset email',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      toast({
+        title: 'Error',
+        description: passwordError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Password Updated!',
+        description: 'Your password has been reset successfully.',
+      });
+      setIsResettingPassword(false);
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update password',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to sign in with Google',
+        variant: 'destructive',
+      });
+      setLoading(false);
+    }
   };
 
   const handleSendEmailOtp = async () => {
@@ -269,6 +370,157 @@ const Auth = () => {
     );
   }
 
+  // Password Reset Screen
+  if (isResettingPassword) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+                Reset Password
+              </h1>
+              <p className="text-muted-foreground">
+                Enter your new password
+              </p>
+            </div>
+
+            <div className="bg-card rounded-2xl p-8 shadow-soft border border-border">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="newPassword"
+                      type={showPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="pl-10 pr-10"
+                      placeholder="••••••••"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleUpdatePassword}
+                  className="w-full gap-2"
+                  disabled={loading || newPassword.length < 6}
+                >
+                  {loading ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                  ) : (
+                    <>
+                      Update Password
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Forgot Password Screen
+  if (showForgotPassword) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+                Forgot Password
+              </h1>
+              <p className="text-muted-foreground">
+                Enter your email to receive a reset link
+              </p>
+            </div>
+
+            <div className="bg-card rounded-2xl p-8 shadow-soft border border-border">
+              {resetEmailSent ? (
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                    <Mail className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Check Your Email</h3>
+                  <p className="text-muted-foreground text-sm">
+                    We've sent a password reset link to <strong>{formData.email}</strong>
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setResetEmailSent(false);
+                    }}
+                    className="w-full"
+                  >
+                    Back to Sign In
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="resetEmail">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="resetEmail"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => {
+                          setFormData({ ...formData, email: e.target.value });
+                          setErrors({ ...errors, email: '' });
+                        }}
+                        className="pl-10"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
+                  </div>
+
+                  <Button
+                    onClick={handleForgotPassword}
+                    className="w-full gap-2"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
+                    ) : (
+                      <>
+                        Send Reset Link
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="w-full"
+                  >
+                    Back to Sign In
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
@@ -283,6 +535,28 @@ const Auth = () => {
           </div>
 
           <div className="bg-card rounded-2xl p-8 shadow-soft border border-border">
+            {/* Social Login */}
+            <div className="space-y-3 mb-6">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <Chrome className="w-4 h-4" />
+                Continue with Google
+              </Button>
+            </div>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
             <Tabs defaultValue="email" className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="email">Email</TabsTrigger>
@@ -430,6 +704,19 @@ const Auth = () => {
                         </>
                       )}
                     </Button>
+                  )}
+
+                  {/* Forgot Password Link */}
+                  {isLogin && (
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
                   )}
                 </form>
               </TabsContent>
