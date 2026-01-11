@@ -1,11 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, Search, Gift } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import hampiousLogo from '@/assets/hampious-logo.png';
 
 const Header = () => {
   const {
@@ -31,11 +30,12 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 group">
-            <img 
-              src={hampiousLogo} 
-              alt="Hampious Logo" 
-              className="h-14 w-auto object-contain"
-            />
+            <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center shadow-gold">
+              <Gift className="w-5 h-5 text-accent-foreground" />
+            </div>
+            <span className="text-2xl font-bold text-foreground tracking-luxe font-serif">
+              Hampious
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

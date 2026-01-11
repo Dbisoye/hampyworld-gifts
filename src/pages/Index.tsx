@@ -1,11 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Gift, Heart, Package, Truck, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, Gift, Heart, Package, Truck, Sparkles, Star, Cake, HeartHandshake, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types/product';
+
+// Map category slugs to specific icons based on emotions
+const getCategoryIcon = (slug: string) => {
+  switch (slug) {
+    case 'birthday':
+      return Cake;
+    case 'love':
+      return Heart;
+    case 'sorry':
+      return HeartHandshake;
+    case 'period-care':
+      return Droplets;
+    default:
+      return Gift;
+  }
+};
+
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -108,16 +125,21 @@ const Index = () => {
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {categories.map((category, index) => <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
-            animationDelay: `${index * 100}ms`
-          }}>
-                <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
-                  <Gift className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
-                </div>
-                <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
-                  {category.name}
-                </h3>
-              </Link>)}
+            {categories.map((category, index) => {
+              const IconComponent = getCategoryIcon(category.slug);
+              return (
+                <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
+                  animationDelay: `${index * 100}ms`
+                }}>
+                  <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
+                    <IconComponent className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
+                    {category.name}
+                  </h3>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
