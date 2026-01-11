@@ -6,27 +6,15 @@ import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types/product';
-
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchData = async () => {
-      const [productsRes, categoriesRes] = await Promise.all([
-        supabase
-          .from('products')
-          .select('*, categories(*)')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(4),
-        supabase
-          .from('categories')
-          .select('*')
-          .order('name')
-      ]);
-
+      const [productsRes, categoriesRes] = await Promise.all([supabase.from('products').select('*, categories(*)').eq('is_active', true).order('created_at', {
+        ascending: false
+      }).limit(4), supabase.from('categories').select('*').order('name')]);
       if (!productsRes.error && productsRes.data) {
         setProducts(productsRes.data);
       }
@@ -35,12 +23,9 @@ const Index = () => {
       }
       setLoading(false);
     };
-
     fetchData();
   }, []);
-
-  return (
-    <Layout>
+  return <Layout>
       {/* Hero Section */}
       <section className="relative py-24 md:py-40 overflow-hidden">
         <div className="absolute inset-0 gradient-luxury" />
@@ -51,7 +36,7 @@ const Index = () => {
         </div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in">
+            <div className="inline-flex items-center gap-2 border border-accent/20 px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in text-red-600 bg-muted">
               <Sparkles className="w-4 h-4 animate-pulse" />
               Handcrafted with Love & Care
             </div>
@@ -83,16 +68,21 @@ const Index = () => {
       <section className="py-20 bg-card border-y border-border/50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: Package, title: 'Premium Selection', desc: 'Hand-picked luxury items' },
-              { icon: Truck, title: 'Express Delivery', desc: 'Cash on delivery available' },
-              { icon: Star, title: 'Exceptional Quality', desc: 'Crafted with perfection' },
-            ].map((feature, index) => (
-              <div 
-                key={index}
-                className="flex items-center gap-5 justify-center md:justify-start p-6 rounded-2xl hover:bg-secondary/50 transition-all duration-300 hover:scale-105 animate-fade-in"
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
+            {[{
+            icon: Package,
+            title: 'Premium Selection',
+            desc: 'Hand-picked luxury items'
+          }, {
+            icon: Truck,
+            title: 'Express Delivery',
+            desc: 'Cash on delivery available'
+          }, {
+            icon: Star,
+            title: 'Exceptional Quality',
+            desc: 'Crafted with perfection'
+          }].map((feature, index) => <div key={index} className="flex items-center gap-5 justify-center md:justify-start p-6 rounded-2xl hover:bg-secondary/50 transition-all duration-300 hover:scale-105 animate-fade-in" style={{
+            animationDelay: `${index * 150}ms`
+          }}>
                 <div className="w-16 h-16 gradient-gold rounded-2xl flex items-center justify-center shadow-gold shrink-0 group-hover:shadow-lg transition-shadow">
                   <feature.icon className="w-8 h-8 text-accent-foreground" />
                 </div>
@@ -100,8 +90,7 @@ const Index = () => {
                   <h3 className="font-semibold text-lg text-foreground">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.desc}</p>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -119,21 +108,16 @@ const Index = () => {
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {categories.map((category, index) => (
-              <Link
-                key={category.id}
-                to={`/shop?category=${category.slug}`}
-                className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+            {categories.map((category, index) => <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                 <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
                   <Gift className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
                 </div>
                 <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
                   {category.name}
                 </h3>
-              </Link>
-            ))}
+              </Link>)}
           </div>
         </div>
       </section>
@@ -155,25 +139,17 @@ const Index = () => {
               </Link>
             </Button>
           </div>
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="animate-pulse bg-card rounded-xl h-80" />
-              ))}
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((product, index) => (
-                <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+          {loading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map(i => <div key={i} className="animate-pulse bg-card rounded-xl h-80" />)}
+            </div> : products.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product, index) => <div key={product.id} className="animate-fade-in-up" style={{
+            animationDelay: `${index * 100}ms`
+          }}>
                   <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
+                </div>)}
+            </div> : <div className="text-center py-12">
               <p className="text-muted-foreground">No products available yet.</p>
-            </div>
-          )}
+            </div>}
         </div>
       </section>
 
@@ -202,8 +178,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Index;
