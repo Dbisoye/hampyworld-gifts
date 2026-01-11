@@ -1,5 +1,6 @@
-import { Gift, Heart, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Heart, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import hampiousLogo from '@/assets/hampious-logo.png';
 
 const Footer = () => {
   return (
@@ -9,10 +10,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center">
-                <Gift className="w-5 h-5 text-accent-foreground" />
-              </div>
-              <span className="text-2xl font-display font-bold tracking-luxe">HampyWorld</span>
+              <img 
+                src={hampiousLogo} 
+                alt="Hampious Logo" 
+                className="h-16 w-auto object-contain"
+              />
             </div>
             <p className="text-primary-foreground/70 max-w-sm leading-relaxed">
               Curating moments of joy through our exquisite collection of premium gift hampers. 
@@ -45,7 +47,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-lg mb-4 tracking-luxe">Contact</h4>
             <ul className="space-y-3 text-primary-foreground/70">
-              <li>support@hampyworld.com</li>
+              <li>support@hampious.com</li>
               <li>+91 7428601664</li>
               <li>Mon - Sun: 10AM - 7PM</li>
             </ul>
@@ -69,7 +71,7 @@ const Footer = () => {
             Made with <Heart className="w-4 h-4 text-accent fill-accent" /> for special moments
           </p>
           <p className="text-primary-foreground/50 text-sm">
-            © 2024 HampyWorld. All rights reserved.
+            © 2024 Hampious. All rights reserved.
           </p>
         </div>
       </div>
