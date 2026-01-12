@@ -58,7 +58,7 @@ const Index = () => {
               Handcrafted with Love & Care
             </div>
             <h1 className="text-5xl md:text-7xl font-display font-bold text-foreground leading-tight tracking-tight animate-fade-in [animation-delay:200ms]">
-              Luxury Gift Hampers for{' '}
+              Gift Hampers for{' '}
               <span className="text-gradient-gold">Every Moment</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed animate-fade-in [animation-delay:400ms]">
