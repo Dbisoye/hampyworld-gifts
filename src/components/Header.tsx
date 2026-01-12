@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import hampiousLogo from '@/assets/hampious-logo.png';
-
 const Header = () => {
   const {
     itemCount
@@ -31,12 +30,8 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-3 group">
-            <img 
-              src={hampiousLogo} 
-              alt="Hampious Logo" 
-              className="h-16 w-auto object-contain"
-            />
-            <span className="text-2xl font-bold text-foreground tracking-wide">
+            <img src={hampiousLogo} alt="Hampious Logo" className="h-16 w-auto object-contain" />
+            <span className="text-2xl font-bold tracking-wide text-[#b89e56] font-serif">
               HAMPIOUS
             </span>
           </Link>
