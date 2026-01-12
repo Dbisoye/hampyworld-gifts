@@ -22,7 +22,6 @@ const getCategoryIcon = (slug: string) => {
       return Gift;
   }
 };
-
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -53,18 +52,17 @@ const Index = () => {
         </div>
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 border border-accent/20 px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in text-red-600 bg-muted">
+            <div className="inline-flex items-center gap-2 border border-accent/20 px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in bg-muted text-pink-800">
               <Sparkles className="w-4 h-4 animate-pulse" />
-              Handcrafted with Love & Care
+              ​Delivered With Love  
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight animate-fade-in [animation-delay:200ms]" style={{ fontFamily: '"Dancing Script", cursive' }}>
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight animate-fade-in [animation-delay:200ms]" style={{
+            fontFamily: '"Dancing Script", cursive'
+          }}>
               Gift Hampers for{' '}
               <span className="text-gradient-gold">Every Moment</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed animate-fade-in [animation-delay:400ms]">
-              Celebrate life's precious moments with our meticulously curated gift hampers. 
-              From birthdays to anniversaries, each creation is a masterpiece of thoughtfulness.
-            </p>
+            <p className="text-lg md:text-xl mt-8 max-w-2xl mx-auto leading-relaxed animate-fade-in [animation-delay:400ms] font-serif text-pink-800">At Hampious, gifting is a love language. Every hamper is thoughtfully curated to feel personal, comforting, and beautifully memorable—made to turn meaningful moments into lasting smiles.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12 animate-fade-in [animation-delay:600ms]">
               <Button asChild size="lg" className="text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow hover:scale-105 transition-transform">
                 <Link to="/shop">
@@ -126,20 +124,18 @@ const Index = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {categories.map((category, index) => {
-              const IconComponent = getCategoryIcon(category.slug);
-              return (
-                <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
-                  animationDelay: `${index * 100}ms`
-                }}>
+            const IconComponent = getCategoryIcon(category.slug);
+            return <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
+              animationDelay: `${index * 100}ms`
+            }}>
                   <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
                     <IconComponent className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
                   </div>
                   <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
                     {category.name}
                   </h3>
-                </Link>
-              );
-            })}
+                </Link>;
+          })}
           </div>
         </div>
       </section>
