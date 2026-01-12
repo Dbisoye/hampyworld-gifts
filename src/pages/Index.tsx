@@ -54,7 +54,7 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 border border-accent/20 px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm animate-fade-in bg-muted text-pink-800">
               <Sparkles className="w-4 h-4 animate-pulse" />
-              ​Delivered With Love  
+              Delivered with Love, Curated with Care  
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight animate-fade-in [animation-delay:200ms]" style={{
             fontFamily: '"Dancing Script", cursive'
@@ -128,7 +128,7 @@ const Index = () => {
             return <Link key={category.id} to={`/shop?category=${category.slug}`} className="group card-luxury p-8 hover-lift text-center animate-fade-in hover:scale-105 transition-transform duration-300" style={{
               animationDelay: `${index * 100}ms`
             }}>
-                  <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3">
+                  <div className="w-20 h-20 gradient-gold rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:shadow-gold transition-all duration-300 group-hover:rotate-3 bg-destructive-foreground text-destructive-foreground">
                     <IconComponent className="w-10 h-10 text-accent-foreground group-hover:scale-110 transition-transform" />
                   </div>
                   <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors">
@@ -184,8 +184,10 @@ const Index = () => {
                 Ready to Spread Joy?
               </h2>
               <p className="mt-6 text-primary-foreground/70 max-w-xl mx-auto text-lg leading-relaxed animate-fade-in [animation-delay:200ms]">
-                Browse our exclusive collection of thoughtfully curated gift hampers 
-                and make someone's day truly extraordinary.
+                Browse our exclusive collection of thoughtfully curated gift hampers and make someone’s day truly extraordinary.
+
+
+Made with care. Wrapped in love
               </p>
               <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow hover:scale-105 transition-transform animate-fade-in [animation-delay:400ms]">
                 <Link to="/shop">
