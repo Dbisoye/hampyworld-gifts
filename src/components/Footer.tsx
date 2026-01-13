@@ -1,20 +1,14 @@
 import { Heart, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import hampiousLogo from '@/assets/hampious-logo.png';
-
 const Footer = () => {
-  return (
-    <footer className="bg-pink-500 text-white py-16 mt-auto">
+  return <footer className="text-white py-16 mt-auto bg-[#9b174c]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img 
-                src={hampiousLogo} 
-                alt="Hampious Logo" 
-                className="h-16 w-auto object-contain"
-              />
+              <img src={hampiousLogo} alt="Hampious Logo" className="h-16 w-auto object-contain" />
             </div>
             <p className="text-white/80 max-w-sm leading-relaxed">
               Curating moments of joy through our exquisite collection of premium gift hampers. 
@@ -75,8 +69,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
