@@ -15,7 +15,7 @@ const getCategoryEmoji = (slug: string) => {
     case 'love':
       return '❤️';
     case 'sorry':
-      return '😢💔';
+      return '💔';
     case 'period-care':
       return '🩸';
     default:
@@ -189,7 +189,7 @@ const Index = () => {
 
 Made with care. Wrapped in love
               </p>
-              <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 gradient-gold border-0 shadow-gold btn-glow hover:scale-105 transition-transform animate-fade-in [animation-delay:400ms]">
+            <Button asChild size="lg" className="mt-10 text-lg px-10 h-14 bg-white border-2 border-pink-500 text-pink-500 hover:bg-pink-50 hover:scale-105 transition-transform animate-fade-in [animation-delay:400ms]">
                 <Link to="/shop">
                   Explore All Hampers <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
