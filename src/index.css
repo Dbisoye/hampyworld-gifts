@@ -25,7 +25,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 18%;
 
-    --primary: 335 77.5701% 41.9608%;
+    --primary: 0 72.2222% 50.5882%;
     --primary-foreground: 210 40% 98.0392%;
 
     --secondary: 267 47% 96%;
@@ -49,9 +49,9 @@
     /* Luxurious shadows */
     --shadow-2xs: 1px 1px 0px 0px #000000;
     --shadow-xs: 2px 2px 0px 0px #000000;
-    --shadow-sm: 4px 3px 0px 5px hsl(335, 78%, 42%);
-    --shadow-md: 4px 3px 0px 5px hsl(335, 78%, 42%);
-    --shadow-lg: 4px 3px 0px 5px hsl(335, 78%, 42%);
+    --shadow-sm: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
+    --shadow-md: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
+    --shadow-lg: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
     --shadow-xl: 16px 16px 0px 0px #000000;
     --shadow-2xl: 24px 24px 0px 0px #000000;
     --shadow-gold: 0 8px 24px -4px hsl(38 70% 50% / 0.2);
@@ -74,7 +74,7 @@
     --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
     --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, Times New Roman, Times, serif;
     --font-mono: "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-    --shadow: 4px 3px 0px 5px hsl(335, 78%, 42%);
+    --shadow: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
     --tracking-normal: 0em;
     --spacing: 0.25rem;
   }
@@ -125,10 +125,10 @@
     --radius: 0rem;
     --shadow-2xs: 1px 1px 0px 0px #ffffff;
     --shadow-xs: 2px 2px 0px 0px #ffffff;
-    --shadow-sm: 4px 3px 0px 5px hsl(335, 78%, 42%);
-    --shadow: 4px 3px 0px 5px hsl(335, 78%, 42%);
-    --shadow-md: 4px 3px 0px 5px hsl(335, 78%, 42%);
-    --shadow-lg: 4px 3px 0px 5px hsl(335, 78%, 42%);
+    --shadow-sm: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
+    --shadow: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
+    --shadow-md: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
+    --shadow-lg: 4px 3px 0px 5px hsla(335, 78%, 42%, 0.66);
     --shadow-xl: 16px 16px 0px 0px #ffffff;
     --shadow-2xl: 24px 24px 0px 0px #ffffff;
     --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
