@@ -2,7 +2,7 @@ import { Heart, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import hampiousLogo from '@/assets/hampious-logo.png';
 const Footer = () => {
-  return <footer className="text-white py-16 mt-auto bg-[#9b174c]">
+  return <footer className="text-white py-16 mt-auto bg-gray-600">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
