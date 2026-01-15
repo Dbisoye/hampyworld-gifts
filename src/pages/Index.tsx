@@ -174,16 +174,16 @@ const Index = () => {
       {/* CTA */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="gradient-dark rounded-3xl p-16 text-center text-primary-foreground relative overflow-hidden hover:scale-[1.02] transition-transform duration-500">
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-accent/30 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite]" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl animate-[float_8s_ease-in-out_infinite_1s] bg-white border-primary shadow-lg border-4 border-dashed text-primary" />
+          <div className="bg-gray-600 rounded-3xl p-16 text-center text-white relative overflow-hidden hover:scale-[1.02] transition-transform duration-500">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite]" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-[float_8s_ease-in-out_infinite_1s]" />
             </div>
             <div className="relative">
               <h2 className="text-4xl md:text-5xl font-display font-bold animate-fade-in">
                 Ready to Spread Joy?
               </h2>
-              <p className="mt-6 text-primary-foreground/70 max-w-xl mx-auto text-lg leading-relaxed animate-fade-in [animation-delay:200ms]">
+              <p className="mt-6 text-white/80 max-w-xl mx-auto text-lg leading-relaxed animate-fade-in [animation-delay:200ms]">
                 Browse our exclusive collection of thoughtfully curated gift hampers and make someone’s day truly extraordinary.
 
 

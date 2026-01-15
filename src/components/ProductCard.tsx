@@ -71,7 +71,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Button 
             size="sm" 
             onClick={handleAddToCart}
-            className="gap-2 gradient-gold border-0 shadow-sm hover:shadow-gold"
+            className="gap-2 bg-accent text-accent-foreground border-0 shadow-sm hover:bg-accent/90"
           >
             <ShoppingCart className="w-4 h-4" />
             Add
