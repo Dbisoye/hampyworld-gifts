@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +39,31 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize Supabase client with user's auth token
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { shipment_id, awb_code }: TrackRequest = await req.json();
 
     if (!shipment_id && !awb_code) {
@@ -47,13 +73,46 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Check if user is admin
+    const { data: adminRole } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isAdmin = !!adminRole;
+
+    // If not admin, verify user owns the order with this shipment
+    if (!isAdmin) {
+      let query = supabase
+        .from("orders")
+        .select("id, user_id")
+        .eq("user_id", user.id);
+
+      if (shipment_id) {
+        query = query.eq("shiprocket_shipment_id", shipment_id);
+      } else if (awb_code) {
+        query = query.eq("tracking_number", awb_code);
+      }
+
+      const { data: order, error: orderError } = await query.maybeSingle();
+
+      if (orderError || !order) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden: You don't have access to this tracking information" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const token = await getShiprocketToken();
 
     let url: string;
     if (awb_code) {
-      url = `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awb_code}`;
+      url = `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${encodeURIComponent(awb_code)}`;
     } else {
-      url = `https://apiv2.shiprocket.in/v1/external/courier/track/shipment/${shipment_id}`;
+      url = `https://apiv2.shiprocket.in/v1/external/courier/track/shipment/${encodeURIComponent(shipment_id!)}`;
     }
 
     const response = await fetch(url, {
